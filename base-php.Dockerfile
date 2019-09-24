@@ -94,27 +94,26 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 
 # install composer so we can run dump-autoload at entrypoint startup in dev
 # copied from official composer Dockerfile
+#RL
 ENV PATH="/composer/vendor/bin:$PATH" \
     COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_VENDOR_DIR=/var/www/vendor \
     COMPOSER_HOME=/composer
-RUN curl -s -f -L -o /tmp/installer.php https://raw.githubusercontent.com/composer/getcomposer.org/da290238de6d63faace0343efbdd5aa9354332c5/web/installer \
- && php -r " \
-    \$signature = '669656bab3166a7aff8a7506b8cb2d1c292f042046c5a994c43155c0be6190fa0355160742ab2e1c88d40d5be660b410'; \
-    \$hash = hash('SHA384', file_get_contents('/tmp/installer.php')); \
-    if (!hash_equals(\$signature, \$hash)) { \
-        unlink('/tmp/installer.php'); \
-        echo 'Integrity check failed, installer is either corrupt or worse.' . PHP_EOL; \
-        exit(1); \
-    }" \
- && php /tmp/installer.php --no-ansi --install-dir=/usr/bin --filename=composer --version=${COMPOSER_VERSION} \
- && rm /tmp/installer.php \
- && composer --ansi --version --no-interaction
+RUN php -r "copy('https://getcomposer.org/installer', '/tmp/composer-setup.php');" \
+  && php -r "\
+    if (hash_file('sha384', '/tmp/composer-setup.php') === 'a5c698ffe4b8e849a443b120cd5ba38043260d5c4023dbf93e1558871f1f07f58274fc6f4c93bcfd858c6bd0775cd8d1') \
+    { echo 'Installer verified'; } \
+     else { echo 'Installer corrupt'; \
+      unlink('/tmp/composer-setup.php'); } echo PHP_EOL;"\
+  && php /tmp/composer-setup.php --no-ansi --install-dir=/usr/bin --filename=composer --version=${COMPOSER_VERSION} \
+  && rm /tmp/composer-setup.php \
+  && composer --ansi --version --no-interaction
 
 
 # install node for running gulp at container entrypoint startup in dev
 # copied from official node Dockerfile
 # gpg keys listed at https://github.com/nodejs/node#release-team
+#RL
 RUN set -ex \
   && for key in \
     94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
@@ -133,11 +132,11 @@ RUN set -ex \
   done
 
 ENV NPM_CONFIG_LOGLEVEL info
-
+#RL
 RUN curl -fsSLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
   && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
   && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
-  && grep " node-v$NODE_VERSION-linux-x64.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
+ && grep " node-v$NODE_VERSION-linux-x64.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
   && tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
   && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
   && ln -s /usr/local/bin/node /usr/local/bin/nodejs
