@@ -45,7 +45,9 @@ RUN apt-get update && apt-get install --no-install-recommends --no-install-sugge
 
 
 # Install extensions using the helper script provided by the base image
+
 RUN docker-php-ext-install \
+    pdo \
     pdo_mysql \
     mysqli \
     json \
@@ -131,17 +133,17 @@ RUN set -ex \
     gpg --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
   done
 
-ENV NPM_CONFIG_LOGLEVEL info
+#ENV NPM_CONFIG_LOGLEVEL info
 #RL
-RUN curl -fsSLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
-  && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
-  && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
- && grep " node-v$NODE_VERSION-linux-x64.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
-  && tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
-  && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
-  && ln -s /usr/local/bin/node /usr/local/bin/nodejs
+#RUN curl -fsSLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
+#  && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
+#  && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
+# && grep " node-v$NODE_VERSION-linux-x64.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
+#  && tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
+#  && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
+#  && ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
-ENV PATH /var/www/node_modules/.bin:$PATH
+#ENV PATH /var/www/node_modules/.bin:$PATH
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 

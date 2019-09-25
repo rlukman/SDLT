@@ -4,16 +4,25 @@ services:
     base-php:
       build:
         context: .
-        dockerfile: base-php.Dockerfile
-      image: rlukman/base-php-nginx
+        dockerfile: php-httpd.Dockerfile
+      image: rlukman/php-httpd
+      ports:
+        - "81:80"
+      depends_on:
+        - mysql
+#    base-php:
+#      build:
+#        context: .
+#        dockerfile: base-php.Dockerfile
+#      image: rlukman/base-php-nginx
     sdlt:
       build:
         context: .
         dockerfile: sdlt.Dockerfile
       image: rlukman/sdlt
       ports:
-        - "8080:80"
-        - "8443:443"
+        - "80:80"
+        - "443:443"
         - "9001:9001"
       depends_on:
         - mysql
@@ -23,9 +32,9 @@ services:
         APP_DEBUG: "true"
         APP_KEY: KEYGOESHERE
         APP_LOG: errorlog
-        APP_URL: "http://localhost"
+        APP_URL: "http://localhost:8080"
         DB_CONNECTION: mysql
-        DB_HOST: mysql
+        DB_HOST: sdlt_mysql_1
         DB_PORT: 3306
         DB_DATABASE: sdlt
         DB_USERNAME: admin01
